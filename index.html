@@ -654,7 +654,7 @@ body:not(.cfg) #tab-lineup [aria-label="My lineup sections"], body:not(.cfg) #ta
     </div>
   </header>
   <div id="viewNote" class="panel" hidden style="margin-bottom:8px;border-left:4px solid var(--accent);padding:8px 12px;font-size:13.5px"></div>
-  <div id="weekBar" class="weekbar"><span class="wb-title">Start/Sit Lab</span><label class="wb-week" for="wbSel" style="display:inline-flex;align-items:center;gap:4px">Week <select id="wbSel" aria-label="Week to view"></select></label><span class="wb-sub" id="wbSub"></span><button type="button" class="btn ghost small" id="findBtn" style="margin-left:auto" title="Find any stat, column, page or player (press /)">🔍 Find</button><button type="button" class="btn ghost small" id="changeTeamBtn" style="display:none" title="Chose the wrong team? Go back to the team chooser">Change team</button><span class="wb-build" id="buildStamp">build Nov 19, 23:40</span></div>
+  <div id="weekBar" class="weekbar"><span class="wb-title">Start/Sit Lab</span><label class="wb-week" for="wbSel" style="display:inline-flex;align-items:center;gap:4px">Week <select id="wbSel" aria-label="Week to view"></select></label><span class="wb-sub" id="wbSub"></span><button type="button" class="btn ghost small" id="findBtn" style="margin-left:auto" title="Find any stat, column, page or player (press /)">🔍 Find</button><button type="button" class="btn ghost small" id="changeTeamBtn" style="display:none" title="Chose the wrong team? Go back to the team chooser">Change team</button><span class="wb-build" id="buildStamp">build Nov 20, 01:13</span></div>
 
   <div id="claimBox" hidden></div>
   <nav class="tabs groups" id="groupNav" role="tablist" aria-label="Main sections">
@@ -5404,7 +5404,7 @@ function renderAbout() {
     '<li><b>Accuracy.</b> Each past week keeps the projections as they stood before kickoff and compares them with actual scores: mean error, bias, the share within 5 points by position, and the biggest misses.</li>' +
     '<li><b>Viewing another week.</b> Choosing a past week in the week bar replays it: results are final, projections and defense tables use only data from before that week, and lineups come from History. Future weeks use the schedule with neutral lines until Vegas numbers exist.</li></ul></div>';
   h += '<div class="panel" style="margin-top:12px"><h2>Badges and labels</h2><ul class="note" style="font-size:14px;line-height:1.5">' +
-    '<li>🦁 with a number: top-three usage at the position (recent workload); on the This week and Season rankings his row is framed in crackling violet lightning (a top-3 player keeps the lightning even when he is also hot); 🔥 hot rows are framed in live flames and ❄️ cold rows in frost. 🐕: low-usage tier. ⚕️: injury designation with chance-to-play applied. ⏱ garbage: a large share of points scored after games were decided. ↑ ↓ trend: last three games versus the games before. ★ in dropdowns: on your roster. BN: bench. “inactive”: out long-term or no game in the team’s last three. “not on roster”: appeared in history but has since left the team.</li>' +
+    '<li>🦁 with a number: top-three usage at the position (recent workload); on the full This week and Season rankings (any position, no name, team or My lineup filter) his row is framed in crackling violet lightning (a top-3 player keeps the lightning even when he is also hot); 🔥 hot rows are framed in live flames and ❄️ cold rows in frost. 🐕: low-usage tier. ⚕️: injury designation with chance-to-play applied. ⏱ garbage: a large share of points scored after games were decided. ↑ ↓ trend: last three games versus the games before. ★ in dropdowns: on your roster. BN: bench. “inactive”: out long-term or no game in the team’s last three. “not on roster”: appeared in history but has since left the team.</li>' +
     '<li>Blue and green numbers next to NFL team rates are the gap to the league average (blue = more passing, green = more running). On the Standings page, green and red mark positive and negative point differential and winning or losing streaks.</li>' +
     '<li>Hover (or long-press) any column header or percentage for its definition and, where it applies, the raw counts behind it.</li></ul></div>';
   h += '<div class="panel" style="margin-top:12px"><h2>Limits worth knowing</h2><ul class="note" style="font-size:14px;line-height:1.5">' +
@@ -5986,7 +5986,8 @@ function limitRows(root) {
   });
 }
 function markRows(root) {
-  var on = state.tab === "players" && ((state.prSub || "week") === "week" || state.prSub === "season");
+  // only on the full rankings: no name search, no team filter, no My lineup switch (a position filter is fine)
+  var on = state.tab === "players" && ((state.prSub || "week") === "week" || state.prSub === "season") && !(state.fq || "").trim() && !state.fTeam && !state.fMine;
   Array.prototype.forEach.call((root || document).querySelectorAll(".tablewrap tbody tr"), function (tr) {
     if (!tr.querySelector("td")) return;
     var inRanks = on && tr.closest("#tab-players");
