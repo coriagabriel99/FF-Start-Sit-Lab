@@ -654,7 +654,7 @@ body:not(.cfg) #tab-lineup [aria-label="My lineup sections"], body:not(.cfg) #ta
     </div>
   </header>
   <div id="viewNote" class="panel" hidden style="margin-bottom:8px;border-left:4px solid var(--accent);padding:8px 12px;font-size:13.5px"></div>
-  <div id="weekBar" class="weekbar"><span class="wb-title">Start/Sit Lab</span><label class="wb-week" for="wbSel" style="display:inline-flex;align-items:center;gap:4px">Week <select id="wbSel" aria-label="Week to view"></select></label><span class="wb-sub" id="wbSub"></span><button type="button" class="btn ghost small" id="findBtn" style="margin-left:auto" title="Find any stat, column, page or player (press /)">🔍 Find</button><button type="button" class="btn ghost small" id="changeTeamBtn" style="display:none" title="Chose the wrong team? Go back to the team chooser">Change team</button><span class="wb-build" id="buildStamp">build Nov 20, 21:03</span></div>
+  <div id="weekBar" class="weekbar"><span class="wb-title">Start/Sit Lab</span><label class="wb-week" for="wbSel" style="display:inline-flex;align-items:center;gap:4px">Week <select id="wbSel" aria-label="Week to view"></select></label><span class="wb-sub" id="wbSub"></span><button type="button" class="btn ghost small" id="findBtn" style="margin-left:auto" title="Find any stat, column, page or player (press /)">🔍 Find</button><button type="button" class="btn ghost small" id="changeTeamBtn" style="display:none" title="Chose the wrong team? Go back to the team chooser">Change team</button><span class="wb-build" id="buildStamp">build Nov 21, 00:59</span></div>
 
   <div id="claimBox" hidden></div>
   <nav class="tabs groups" id="groupNav" role="tablist" aria-label="Main sections">
@@ -2094,16 +2094,18 @@ function renderLineup() {
     h += '<div class="tablewrap"><table><thead><tr><th>Player</th><th>Opponent</th><th>Matchup</th><th class="num" title="Season average fantasy points per game">Average fantasy points</th><th class="num" title="Actual points once his game is final; projected until then">This week</th><th>Call</th></tr></thead><tbody>';
     var irSet = state.ir || [], irEvs = benchAll.filter(function (e) { return irSet.indexOf(e.p.id) >= 0; }); benchAll = benchAll.filter(function (e) { return irSet.indexOf(e.p.id) < 0; });
     benchAll.forEach(function (e) {
-      var call;
-      if (e.bye) call = '<span class="verdict-bye">Bye week</span>';
+      var call, thru = OUT_THRU[e.p.id];
+      if (thru && thru >= CUR) call = '<span class="verdict-sit">Out</span><div class="muted small">' + (thru >= ROS_END ? 'Out for the season' : 'Out through Week ' + thru) + (e.bye ? ' (bye this week)' : '') + '</div>';
+      else if (e.bye) call = '<span class="verdict-bye">Bye week</span>';
       else if (e.out) call = '<span class="verdict-sit">Out</span><div class="muted small">Not expected to play</div>';
       else {
         var starters = opt.lineup.filter(function (l) { return l.ev && (l.slot === "SF" || (l.slot === e.p.pos) || (l.slot === "FLEX" && FLEX_POS[e.p.pos])); });
         var weakest = null;
         starters.forEach(function (l) { if (!weakest || l.ev.val < weakest.ev.val) weakest = l; });
         if (weakest) {
-          var gap = e.val - weakest.ev.val;
-          call = gap > -1.0 ? '<span class="verdict-close">Close call</span><div class="muted small">' + f1(Math.abs(gap)) + ' behind ' + esc(weakest.ev.p.name) + '</div>'
+          var gap = e.val - weakest.ev.val, slotName = weakest.slot === "FLEX" ? "the flex" : weakest.slot === "SF" ? "superflex" : weakest.slot;
+          call = gap > 1.0 ? '<span class="verdict-start">Start him</span><div class="muted small">' + f1(gap) + ' ahead of ' + esc(weakest.ev.p.name) + ' at ' + slotName + '</div>'
+               : gap > -1.0 ? '<span class="verdict-close">Close call</span><div class="muted small">' + (gap >= 0 ? f1(gap) + ' ahead of ' : f1(Math.abs(gap)) + ' behind ') + esc(weakest.ev.p.name) + '</div>'
                             : '<span class="verdict-sit">Sit</span><div class="muted small">' + f1(Math.abs(gap)) + ' behind ' + esc(weakest.ev.p.name) + '</div>';
         } else call = '<span class="verdict-sit">Sit</span>';
       }
